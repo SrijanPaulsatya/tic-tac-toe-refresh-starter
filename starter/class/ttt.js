@@ -35,6 +35,23 @@ class TTT {
     // Return 'T' if the game is a tie
     // Return false if the game has not ended
 
+    let isEmpty = true;
+    let horizontalWinX = true;
+
+    grid.forEach(row => {
+      row.forEach(element => {
+        if (element !== ' ') {
+          isEmpty = false;
+        }
+      });
+    })
+    
+    if (isEmpty) {
+      return false;
+    }
+
+
+
   }
 
   static endGame(winner) {
