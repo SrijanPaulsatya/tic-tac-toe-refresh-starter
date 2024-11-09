@@ -22,9 +22,15 @@ class TTT {
     Screen.addCommand('d', 'Move the Cursor Right', this.rightCommand.bind(this));
     Screen.addCommand('s', 'Move the Cursor Down', this.downCommand.bind(this));
     Screen.addCommand('a', 'Move the Cursor Left', this.leftCommand.bind(this));
+    Screen.addCommand('h', 'Help', this.helpCommand.bind(this));
+    Screen.addCommand('space', 'Place Move', this.placeMoveCommand.bind(this));
 
 
     Screen.render();
+  }
+
+  helpCommand() {
+    Screen.printCommands();
   }
 
   upCommand() {
@@ -55,6 +61,31 @@ class TTT {
     Screen.render();
   }
 
+  placeMoveCommand() {
+    let { row, col } = this.cursor;
+    if (this.grid[row][col] === " ") {
+      this.grid[row][col] = this.playerTurn;
+      Screen.setGrid(row, col, this.playerTurn);
+      Screen.setTextColor(row, col, "blue");
+    
+
+      const winner = TTT.checkWin(this.grid);
+      if (winner) {
+        TTT.endGame(winner);
+        return;
+      }
+
+      this.playerTurn = this.playerTurn === "O" ? "X" : "O";
+      Screen.setMessage(`Player ${this.playerTurn}'s turn`);
+      Screen.render();
+      Screen.printCommands();
+
+    } else {
+      Screen.setMessage("Cell is already occupied, Choose Another Cell");
+      Screen.render();
+    }
+  }
+
 
   static checkWin(grid) {
 
@@ -63,85 +94,55 @@ class TTT {
     // Return 'T' if the game is a tie
     // Return false if the game has not ended
 
-    let emptyCount = 0;
-    let horizontalWinForX = false;
-    let horizontalWinForO = false;
-
-    grid.forEach(row => {
-      row.forEach(element => {
-        if (element === " ") {
-          emptyCount += 1;
+    let checkHorizontalWin = (move) => {
+      for (let row of grid) {
+        if (row[0] === move && row[1] === move && row[2] === move) {
+          return true;
         }
-      });
-
-      if (row.filter(element => element === "X").length === 3) {
-        horizontalWinForX = true;
       }
-      else if (row.filter(element => element === "O").length === 3) {
-        horizontalWinForO = true;
-      }
-
-    });
+      return false;
+    };
 
     let checkColumnWin = (move) => {
 
-      let gridLengthSquared = grid.length * grid.length;
-      let col = 0;
-      let columnWin = [];
-
-      for (let i = 0; i < gridLengthSquared; i++) {
-        if (columnWin === [move, move, move]) {
-          break;
-        }
-
-        while (col < grid.length) {
-          let currentElement = grid[i % grid.length][col];
-          if (currentElement === move) {
-            columnWin.push(currentElement);
-          }
-
-          if (col === 3) {
-            col = 0;
-          } else {
-            col++;
-          }
+      for (let col = 0; col < grid.length; col++) {
+        if (
+          grid[0][col] === move &&
+          grid[1][col] === move &&
+          grid[2][col] === move ) {
+            return true;
         }
       }
-      return columnWin.length === 3;
+      return false;
+
     }
 
     let checkDiagonalWin = (move) => {
-      let diagonalWin = [];
-      let otherDiagonalWin = [];
-      for (let i = 0; i < grid.length; i++) {
-        for (let col = 0; col < grid.length; col++) {
-          let currentElement = grid[i][col];
-          if (currentElement === move) {
-            diagonalWin.push(currentElement);
-          }
-        }
-        for (let col = grid.length; col >= 0; col--) {
-          let currentElement = grid[i][col];
-          if (currentElement === move) {
-            otherDiagonalWin.push(currentElement);
-          }
-        }
-      }
-      return ((diagonalWin.length === 3) || (otherDiagonalWin.length === 3))
-    }
-          
-    if (horizontalWinForX || checkColumnWin("X") || checkDiagonalWin("X")) {
+
+      const diagonal1 = 
+        grid[0][0] === move &&
+        grid[1][1] === move &&
+        grid[2][2] === move;
+
+      const diagonal2 = 
+        grid[0][2] === move &&
+        grid[1][1] === move &&
+        grid[2][0] === move;
+      
+      return diagonal1 || diagonal2;
+
+    };
+
+ 
+    if (checkHorizontalWin("X") || checkColumnWin("X") || checkDiagonalWin("X")) {
       return "X";
     }
-    else if (horizontalWinForO || checkColumnWin("O") || checkDiagonalWin("O")) {
+    if (checkHorizontalWin("O") || checkColumnWin("O") || checkDiagonalWin("O")) {
       return "O";
     }
-    else if (emptyCount > 0) {
-      return false;
-    }
-    else {
-      return "T";
-    }
+
+    let emptySpaces = grid.flat().filter(cell => cell === " ").length;
+    return emptySpaces > 0 ? false : "T";
 
   }
 
