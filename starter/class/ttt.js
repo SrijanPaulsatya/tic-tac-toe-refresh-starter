@@ -35,22 +35,85 @@ class TTT {
     // Return 'T' if the game is a tie
     // Return false if the game has not ended
 
-    let isEmpty = true;
-    let horizontalWinX = true;
+    let emptyCount = 0;
+    let horizontalWinForX = false;
+    let horizontalWinForO = false;
 
     grid.forEach(row => {
       row.forEach(element => {
-        if (element !== ' ') {
-          isEmpty = false;
+        if (element === " ") {
+          emptyCount += 1;
         }
       });
-    })
-    
-    if (isEmpty) {
-      return false;
+
+      if (row.filter(element => element === "X").length === 3) {
+        horizontalWinForX = true;
+      }
+      else if (row.filter(element => element === "O").length === 3) {
+        horizontalWinForO = true;
+      }
+
+    });
+
+    let checkColumnWin = (move) => {
+
+      let gridLengthSquared = grid.length * grid.length;
+      let col = 0;
+      let columnWin = [];
+
+      for (let i = 0; i < gridLengthSquared; i++) {
+        if (columnWin === [move, move, move]) {
+          break;
+        }
+
+        while (col < grid.length) {
+          let currentElement = grid[i % grid.length][col];
+          if (currentElement === move) {
+            columnWin.push(currentElement);
+          }
+
+          if (col === 3) {
+            col = 0;
+          } else {
+            col++;
+          }
+        }
+      }
+      return columnWin.length === 3;
     }
 
-
+    let checkDiagonalWin = (move) => {
+      let diagonalWin = [];
+      let otherDiagonalWin = [];
+      for (let i = 0; i < grid.length; i++) {
+        for (let col = 0; col < grid.length; col++) {
+          let currentElement = grid[i][col];
+          if (currentElement === move) {
+            diagonalWin.push(currentElement);
+          }
+        }
+        for (let col = grid.length; col >= 0; col--) {
+          let currentElement = grid[i][col];
+          if (currentElement === move) {
+            otherDiagonalWin.push(currentElement);
+          }
+        }
+      }
+      return ((diagonalWin.length === 3) || (otherDiagonalWin.length === 3))
+    }
+          
+    if (horizontalWinForX || checkColumnWin("X") || checkDiagonalWin("X")) {
+      return "X";
+    }
+    else if (horizontalWinForO || checkColumnWin("O") || checkDiagonalWin("O")) {
+      return "O";
+    }
+    else if (emptyCount > 0) {
+      return false;
+    }
+    else {
+      return "T";
+    }
 
   }
 
@@ -67,5 +130,6 @@ class TTT {
   }
 
 }
+
 
 module.exports = TTT;
